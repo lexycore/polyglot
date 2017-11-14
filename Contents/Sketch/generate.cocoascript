@@ -1,0 +1,92 @@
+@import 'sketch.cocoascript'
+@import 'files.cocoascript'
+
+function addValue(localeObj, strPath, strValue) {
+  if (strPath.length > 0) {
+    var key = strPath.pop();
+    if (!localeObj[key]) {
+      localeObj[key] = {}
+    }
+    localeObj[key] = addValue(localeObj[key], strPath, strValue)
+  } else {
+    localeObj = strValue;
+  }
+  return localeObj;
+}
+
+function localeStringFromTextLayers(textLayers, localeObject) {
+  if (localeObject == undefined) {
+    localeObject = {};
+  }
+  for (var i = 0; i < textLayers.length; i++) {
+    var textLayer = textLayers[i],
+        stringName = unescape(textLayer.name()),
+        stringValue = unescape(textLayer.stringValue());
+    var stringPath = [];
+    stringPath.push(stringName);
+
+    while (textLayer.parentGroup()) {
+      textLayer = textLayer.parentGroup();
+      var stubName = unescape(textLayer.name());
+      stringPath.push(stubName);
+    }
+    localeObject = addValue(localeObject, stringPath, stringValue);
+  }
+
+  /*var localeJsonString = JSON.stringify(localeObject, undefined, 2);*/
+  return localeObject;
+}
+
+function generateLocaleForPage(page) {
+  var textLayers = getTextLayersForPage(page);
+  var localeObject = localeStringFromTextLayers(textLayers);
+  var localeJsonString = JSON.stringify(localeObject, undefined, 2);
+  return localeJsonString;
+}
+
+function generateLocaleForCurrentPage(doc) {
+  var currentPage = [doc currentPage];
+  return generateLocaleForPage(currentPage);
+}
+
+function generateLocaleForAllPages(doc) {
+  var pages = [doc pages],
+      localeObject = {};
+  for (var i = 0; i < pages.count(); i++) {
+    var textLayers = getTextLayersForPage(pages[i]);
+    localeObject = localeStringFromTextLayers(textLayers, localeObject);
+  }
+  var localeJsonString = JSON.stringify(localeObject, undefined, 2);
+  return localeJsonString;
+}
+
+var onGenerateToClipboard = function(context) {
+  //reference the Sketch Document
+  var doc = context.document;
+
+  var textStrings = generateLocaleForAllPages(doc);
+  copyStringToClipboard(
+    textStrings,
+    'The translation file has been copied to your clipboard, ' +
+    'paste it in your favorite editor and save it as a *.json file ' +
+    'for example \'en-US.json\'.\n\n' +
+    'When you are ready to import your changes run \n' +
+    '\'2. Localize page\' and pick your json file that contains the translations.'
+  );
+}
+
+var onGenerateToFile = function(context) {
+  //reference the Sketch Document
+  var doc = context.document;
+
+  var fileURL = chooseFileToSave([doc fileURL]);
+  if (fileURL != undefined) {
+    var textStrings = generateLocaleForAllPages(doc);
+    var ok = writeTextToFile(textStrings, fileURL);
+    if (!ok) {
+      alert("Error writing file to " + fileURL);
+    } else {
+      doc.showMessage('Translation file saved to ' + fileURL);
+    }
+  }
+}

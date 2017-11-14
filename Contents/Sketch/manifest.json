@@ -1,0 +1,42 @@
+{
+  "name" : "polyglot",
+  "identifier" : "com.lexycore.polyglot",
+  "version" : "0.2",
+  "description" : "Localization for sketch projects",
+  "authorEmail" : "info@lexycore.com",
+  "author" : "LexyCore, Ltd.",
+  "homepage" : "https://lexycore.com/sketch/polyglot",
+  "commands" : [
+    {
+      "script" : "generate.cocoascript",
+      "handler" : "onGenerateToFile",
+      "shortcut" : "command control s",
+      "name" : "1a. Generate translation (to file)",
+      "identifier" : "polyglot.generate.file"
+    },
+    {
+      "script" : "generate.cocoascript",
+      "handler" : "onGenerateToClipboard",
+      "shortcut" : "command control g",
+      "name" : "1b. Generate translation (to clipboard)",
+      "identifier" : "polyglot.generate.clipboard"
+    },
+    {
+      "script" : "localize.cocoascript",
+      "handler" : "onRun",
+      "shortcut" : "command control l",
+      "name" : "2. Load translation",
+      "identifier" : "polyglot.load"
+    }
+  ],
+  "menu": {
+    "isRoot" : false,
+    "shortcut" : "",
+    "title": "polyglot",
+    "items": [
+      "polyglot.generate.file",
+      "polyglot.generate.clipboard",
+      "polyglot.load"
+    ]
+  }
+}

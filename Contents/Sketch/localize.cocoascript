@@ -1,0 +1,83 @@
+@import 'files.cocoascript'
+@import 'sketch.cocoascript'
+
+var onRun = function(context) {
+  //reference the Sketch Document
+  var doc = context.document;
+
+  url = chooseFileToLoad([doc fileURL]);
+  if (url != undefined) {
+    errorCount = loadLocalized(url);
+    if (errorCount > 0) {
+      alert('Localization completed with ' + errorCount + ' errors.', null);
+    } else {
+      doc.showMessage('Localization completed successfully');
+    }
+  }
+
+  function loadLocalized(url) {
+    var errorCount = 0,
+        pages = [doc pages];
+    filename = [[url lastPathComponent] stringByDeletingPathExtension];
+    getString = NSString.stringWithContentsOfFile_encoding_error(url, NSUTF8StringEncoding, null);
+
+    if (getString) {
+      data = JSON.parse(getString.toString());
+      for (var i = 0; i < pages.count(); i++) {
+        var textLayers = getTextLayersForPage(pages[i]),
+            pageName = pages[i].name();
+        if (data[pageName]) {
+          errorCount += translatePageWithData(pages[i], data[pageName]);
+        }
+      }
+
+    }
+    return errorCount
+  }
+
+  function translatePageWithData(page, data) {
+    var pageName = [page name],
+            textLayers = getTextLayersForPage(page),
+            errorCount = 0;
+
+    for (var i = 0; i < textLayers.length; i++) {
+      var textLayer = textLayers[i],
+          tmpLayer = textLayers[i],
+          stringName = unescape(textLayer.name()),
+          stringValue = unescape(textLayer.stringValue()),
+          stringPath = [];
+      stringPath.push(stringName);
+
+      while (tmpLayer.parentGroup()) {
+        tmpLayer = tmpLayer.parentGroup();
+        if (tmpLayer == page) {
+          break;
+        }
+        var stubName = unescape(tmpLayer.name());
+        stringPath.push(stubName);
+      }
+      var tmpData = data;
+      while (stringPath.length > 0) {
+        var key = stringPath.pop();
+        if (tmpData[key]) {
+          tmpData = tmpData[key];
+        } else {
+          tmpData = undefined;
+          break;
+        }
+      }
+
+      if (tmpData != undefined) {
+        textLayer.setStringValue(tmpData);
+        [textLayer adjustFrameToFit];
+      } else {
+        errorCount++;
+      }
+    }
+
+    /*[doc setCurrentPage:page];*/
+
+    return errorCount;
+  }
+
+}

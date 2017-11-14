@@ -1,0 +1,37 @@
+
+function alert(msg, title) {
+    title = title || 'pt Polyglot';
+    var app = [NSApplication sharedApplication];
+    [app displayDialog:msg withTitle:title];
+}
+
+function isTextLayer(layer) {
+    if (layer.class() == MSTextLayer) {
+        return true;
+    }
+    return false;
+}
+
+function getTextLayersForPage(page) {
+    var layers = [page children],
+        textLayers = [];
+
+    for (var i = 0; i < layers.count(); i++) {
+        var layer = [layers objectAtIndex:i];
+        if (isTextLayer(layer)) {
+            textLayers.push(layer);
+        }
+    }
+
+    return textLayers;
+}
+
+function copyStringToClipboard(string, msg) {
+  var clipboard = NSPasteboard.generalPasteboard();
+  clipboard.declareTypes_owner([NSPasteboardTypeString], null);
+  clipboard.setString_forType(string , NSPasteboardTypeString);
+  if (msg != undefined) {
+    alert(msg, null);
+  }
+  return true;
+}

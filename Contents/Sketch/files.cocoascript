@@ -1,0 +1,86 @@
+function chooseFileToSave(docFileURL) {
+  var result = ''
+  var savePanel = [NSSavePanel savePanel];
+  if (docFileURL) {
+    defaultDirectory = [docFileURL URLByDeletingLastPathComponent]
+  }
+  [savePanel setCanChooseDirectories: true];
+  // [savePanel setCanChooseFiles: true];
+  [savePanel setAllowedFileTypes: ['json']];
+  [savePanel setCanCreateDirectories: true];
+  [savePanel setDirectoryURL: defaultDirectory];
+  // [savePanel setAllowsMultipleSelection: false]
+  [savePanel setTitle: "Save a json file"];
+  [savePanel setPrompt: "Save"];
+  if ([savePanel runModal] == NSOKButton) {
+    var urls = [savePanel URLs]
+    if (urls.length > 0) {
+      result = '' + urls[0];
+      if (result.substr(0,7) == 'file://') {
+        result = result.substr(7);
+      }
+    }
+    var filename = [savePanel nameFieldStringValue];
+    if (filename.substr(-5) != '.json') {
+      filename += '.json';
+    }
+    result += filename;
+    return result;
+  }
+  return undefined;
+}
+
+/**
+ * Write a given text to a file at the given path
+ *
+ * @param  {string} text  given text
+ * @param  {string} path  given file path
+ * @return {boolean}      true if successful
+ */
+function writeTextToFile(text, path) {
+    var result = false;
+    if (typeof text != 'string') {
+        return result;
+    }
+    if (typeof path != 'string') {
+        return result;
+    }
+    // create a NSString object from the given text
+    var nsstring = NSString.stringWithUTF8String(text);
+
+    // use the writeToFile method of the NSString object to write the text to the given URL
+    result = [nsstring writeToFile:path atomically:1 encoding:NSUTF8StringEncoding error:nil];
+    if (!result) {
+        result = false;
+    } else {
+        result = true;
+    }
+    return result;
+}
+
+function chooseFileToLoad(docFileURL) {
+  var openPanel = [NSOpenPanel openPanel];
+
+  var defaultDirectory = [NSURL fileURLWithPath:"~/Documents/"];
+  if(docFileURL) {
+    defaultDirectory = [docFileURL URLByDeletingLastPathComponent]]
+  }
+
+  [openPanel setCanChooseDirectories:true];
+  [openPanel setCanChooseFiles:true];
+  [openPanel setAllowedFileTypes:['json']];
+  [openPanel setCanCreateDirectories:false];
+  [openPanel setDirectoryURL:defaultDirectory];
+  [openPanel setAllowsMultipleSelection: true]
+
+  [openPanel setTitle:"Pick a localization file"];
+  [openPanel setPrompt:"Localize"];
+
+  if ([openPanel runModal] == NSOKButton) {
+    var urls = [openPanel URLs];
+    if (urls.count() > 0) {
+      return urls[0];
+    }
+  }
+  return undefined;
+}
